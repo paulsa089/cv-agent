@@ -1,90 +1,71 @@
 import streamlit as st
-import subprocess
 from jinja2 import Environment, FileSystemLoader
-import os
-import uuid
 
-# Streamlit App Titel
+# Initialisierung des Session States
+if 'cv_generated' not in st.session_state:
+    st.session_state['cv_generated'] = False
+
+# Titel
 st.title("Lebenslauf Generator")
 
 # Eingabeformular
 st.header("Lebenslauf-Daten eingeben")
 
-# Basisdaten
+# Formularfelder
 job_title = st.text_input("Berufsbezeichnung", "Finanzbuchhalter")
 name = st.text_input("Name", "[Anonymisiert]")
 birth_year = st.text_input("Geburtsjahr", "1996")
 location = st.text_input("Wohnort", "Berlin")
 family_status = st.text_input("Familienstand", "Ledig")
 nationality = st.text_input("Staatsangehörigkeit", "Deutsch")
-
-# Berufsziel
 career_goal = st.text_area("Berufsziel", "Digitalaffiner Finanzbuchhalter...")
 
 # Ausbildung
-st.header("Ausbildung")
-education = []
-for i in range(1, 4):
-    degree = st.text_input(f"Abschluss {i}", "")
-    institution = st.text_input(f"Bildungseinrichtung {i}", "")
-    year = st.text_input(f"Abschlussjahr {i}", "")
-    if degree and institution and year:
-        education.append({"degree": degree, "institution": institution, "year": year})
+st.subheader("Ausbildung")
+education_entries = st.text_area(
+    "Gib die Ausbildung ein (eine pro Zeile, z.B. '2015-2018: Ausbildung zum Steuerfachangestellten')"
+)
+education = [entry.strip() for entry in education_entries.split("\n") if entry.strip()]
 
 # Kenntnisse
-st.header("Kenntnisse")
-professional_skills = st.text_area("Berufliche Kenntnisse (Kommagetrennt)", "Finanzbuchhaltung, Controlling, DATEV")
-personal_skills = st.text_area("Persönliche Stärken (Kommagetrennt)", "Teamfähigkeit, Selbstorganisation, Zuverlässigkeit")
+st.subheader("Kenntnisse")
+professional_skills = st.text_input("Fachliche Kenntnisse (z.B. SAP, DATEV, MS Excel)", "")
+personal_skills = st.text_input("Persönliche Kompetenzen (z.B. Teamfähigkeit, Flexibilität)", "")
 
 # Sprachen
-st.header("Sprachkenntnisse")
-languages = st.text_area("Sprachen (Beispiel: Deutsch - Muttersprache, Englisch - Fließend)", "Deutsch - Muttersprache, Englisch - Fließend")
+st.subheader("Sprachen")
+language_entries = st.text_area(
+    "Gib die Sprachen ein (eine pro Zeile, z.B. 'Englisch: Verhandlungssicher')"
+)
+languages = [entry.strip() for entry in language_entries.split("\n") if entry.strip()]
 
-# Button zur PDF-Erstellung
-#if st.button("Lebenslauf generieren"):
-#   # Temporärer Ordner für Dateien
-#output_dir = "output"
-#   os.makedirs(output_dir, exist_ok=True)
+# Daten zusammenfassen
+cv_data = {
+    "job_title": job_title,
+    "name": name,
+    "birth_year": birth_year,
+    "location": location,
+    "family_status": family_status,
+    "nationality": nationality,
+    "career_goal": career_goal,
+    "education": education,
+    "skills": {
+        "professional": professional_skills,
+        "personal": personal_skills
+    },
+    "languages": languages
+}
 
-# Statt PDF erstellen, zeig die Daten einfach an
+# Button zur "Generierung"
 if st.button("Lebenslauf generieren"):
-    st.write("Lebenslauf-Daten:")
-    st.json(cv_data)
+    st.session_state['cv_generated'] = True
+    st.session_state['cv_data'] = cv_data
 
-    # Daten für das Template
-    cv_data = {
-        "job_title": job_title,
-        "name": name,
-        "birth_year": birth_year,
-        "location": location,
-        "family_status": family_status,
-        "nationality": nationality,
-        "career_goal": career_goal,
-        "education": education,
-        "skills": {
-            "professional": [skill.strip() for skill in professional_skills.split(",") if skill.strip()],
-            "personal": [skill.strip() for skill in personal_skills.split(",") if skill.strip()]
-        },
-        "languages": [lang.strip() for lang in languages.split(",") if lang.strip()]
-    }
+# Ausgabe nach Klick
+if st.session_state['cv_generated']:
+    st.success("Lebenslauf-Daten erfolgreich erfasst!")
+    st.write("Hier sind die eingegebenen Daten:")
+    st.json(st.session_state['cv_data'])
 
-    # Template laden
-    env = Environment(loader=FileSystemLoader('.'))
-    template = env.get_template('cv_template.tex')
+    st.info("Hinweis: PDF-Generierung in Streamlit Cloud nicht möglich – lokale Ausführung notwendig für PDF.")
 
-    # Einzigartige Dateinamen
-    file_id = str(uuid.uuid4())
-    tex_file = os.path.join(output_dir, f"{file_id}.tex")
-    pdf_file = os.path.join(output_dir, f"{file_id}.pdf")
-
-    # LaTeX-Datei schreiben
-    with open(tex_file, 'w', encoding='utf-8') as f:
-        f.write(template.render(cv=cv_data))
-
-    # LaTeX zu PDF kompilieren
-    subprocess.run(['pdflatex', '-output-directory', output_dir, tex_file])
-
-    # PDF zum Download bereitstellen
-    with open(pdf_file, "rb") as f:
-        st.success("PDF erfolgreich erstellt!")
-        st.download_button("PDF herunterladen", f, file_name="Lebenslauf.pdf")
