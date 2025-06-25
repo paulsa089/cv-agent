@@ -1,0 +1,77 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[margin=1in]{geometry}
+\usepackage{lmodern}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{graphicx}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.5em}
+
+\begin{document}
+
+% Persönliche Informationen
+{\LARGE \textbf{{ cv.name }}} \\[0.2cm]
+\textbf{{ cv.job_title }} \\[0.2cm]
+Geburtsjahr: {{ cv.birth_year }} \quad Wohnort: {{ cv.location }} \quad Familienstand: {{ cv.family_status }} \quad Staatsangehörigkeit: {{ cv.nationality }} \\[0.2cm]
+E-Mail: {{ cv.email }} \quad Telefon: {{ cv.phone }} \\
+{% if cv.linkedin %}
+LinkedIn: {{ cv.linkedin }} \\
+{% endif %}
+
+\vspace{0.5cm}
+
+% Berufsziel
+\section*{Berufsziel}
+{{ cv.career_goal }}
+
+\vspace{0.5cm}
+
+% Berufserfahrung
+\section*{Berufserfahrung}
+\begin{itemize}
+{% for job in cv.work_experience %}
+    \item \textbf{{ job.position }} \\
+    {{ job.company }} | {{ job.location }} | {{ job.period }}
+    \begin{itemize}
+        {% for task in job.tasks %}
+            \item {{ task }}
+        {% endfor %}
+    \end{itemize}
+{% endfor %}
+\end{itemize}
+
+\vspace{0.5cm}
+
+% Ausbildung
+\section*{Ausbildung}
+\begin{itemize}
+{% for edu in cv.education %}
+    \item \textbf{{ edu.degree }} \\
+    {{ edu.institution }} | {{ edu.location }} | {{ edu.period }}
+{% endfor %}
+\end{itemize}
+
+\vspace{0.5cm}
+
+% Kenntnisse
+\section*{Kenntnisse}
+\begin{itemize}
+{% for skill in cv.skills %}
+    \item {{ skill }}
+{% endfor %}
+\end{itemize}
+
+\vspace{0.5cm}
+
+% Sprachen
+\section*{Sprachen}
+\begin{itemize}
+{% for lang in cv.languages %}
+    \item {{ lang.language }}: {{ lang.level }}
+{% endfor %}
+\end{itemize}
+
+\end{document}
