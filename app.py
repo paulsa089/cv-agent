@@ -3,8 +3,8 @@ import pdfcrowd
 from jinja2 import Environment, FileSystemLoader
 
 # pdfcrowd Zugangsdaten
-PDFCROWD_USERNAME = 'DEIN_USERNAME'  # Hier deinen pdfcrowd Username eintragen
-PDFCROWD_API_KEY = 'DEIN_API_KEY'    # Hier deinen pdfcrowd API Key eintragen
+PDFCROWD_USERNAME = 'paulsa'  # Hier deinen pdfcrowd Username eintragen
+PDFCROWD_API_KEY = 'e0bd4b588648bfc431efcd2c0df245a2'    # Hier deinen pdfcrowd API Key eintragen
 
 st.title("Lebenslauf Generator (Cloud PDF)")
 
