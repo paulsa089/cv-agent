@@ -41,10 +41,15 @@ st.header("Sprachkenntnisse")
 languages = st.text_area("Sprachen (Beispiel: Deutsch - Muttersprache, Englisch - Fließend)", "Deutsch - Muttersprache, Englisch - Fließend")
 
 # Button zur PDF-Erstellung
+#if st.button("Lebenslauf generieren"):
+#   # Temporärer Ordner für Dateien
+#output_dir = "output"
+#   os.makedirs(output_dir, exist_ok=True)
+
+# Statt PDF erstellen, zeig die Daten einfach an
 if st.button("Lebenslauf generieren"):
-    # Temporärer Ordner für Dateien
-    output_dir = "output"
-    os.makedirs(output_dir, exist_ok=True)
+    st.write("Lebenslauf-Daten:")
+    st.json(cv_data)
 
     # Daten für das Template
     cv_data = {
