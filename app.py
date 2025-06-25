@@ -1,17 +1,15 @@
 import streamlit as st
+import pdfcrowd
 from jinja2 import Environment, FileSystemLoader
 
-# Initialisierung des Session States
-if 'cv_generated' not in st.session_state:
-    st.session_state['cv_generated'] = False
+# pdfcrowd Zugangsdaten
+PDFCROWD_USERNAME = 'DEIN_USERNAME'  # Hier deinen pdfcrowd Username eintragen
+PDFCROWD_API_KEY = 'DEIN_API_KEY'    # Hier deinen pdfcrowd API Key eintragen
 
-# Titel
-st.title("Lebenslauf Generator")
+st.title("Lebenslauf Generator (Cloud PDF)")
 
-# Eingabeformular
 st.header("Lebenslauf-Daten eingeben")
 
-# Formularfelder
 job_title = st.text_input("Berufsbezeichnung", "Finanzbuchhalter")
 name = st.text_input("Name", "[Anonymisiert]")
 birth_year = st.text_input("Geburtsjahr", "1996")
@@ -20,52 +18,40 @@ family_status = st.text_input("Familienstand", "Ledig")
 nationality = st.text_input("Staatsangehörigkeit", "Deutsch")
 career_goal = st.text_area("Berufsziel", "Digitalaffiner Finanzbuchhalter...")
 
-# Ausbildung
-st.subheader("Ausbildung")
-education_entries = st.text_area(
-    "Gib die Ausbildung ein (eine pro Zeile, z.B. '2015-2018: Ausbildung zum Steuerfachangestellten')"
-)
-education = [entry.strip() for entry in education_entries.split("\n") if entry.strip()]
+education = st.text_area("Ausbildung (Trenne Einträge mit Semikolon)", "")
+skills_professional = st.text_area("Fachliche Kenntnisse", "")
+skills_personal = st.text_area("Persönliche Eigenschaften", "")
+languages = st.text_area("Sprachen (Trenne Einträge mit Semikolon)", "")
 
-# Kenntnisse
-st.subheader("Kenntnisse")
-professional_skills = st.text_input("Fachliche Kenntnisse (z.B. SAP, DATEV, MS Excel)", "")
-personal_skills = st.text_input("Persönliche Kompetenzen (z.B. Teamfähigkeit, Flexibilität)", "")
-
-# Sprachen
-st.subheader("Sprachen")
-language_entries = st.text_area(
-    "Gib die Sprachen ein (eine pro Zeile, z.B. 'Englisch: Verhandlungssicher')"
-)
-languages = [entry.strip() for entry in language_entries.split("\n") if entry.strip()]
-
-# Daten zusammenfassen
-cv_data = {
-    "job_title": job_title,
-    "name": name,
-    "birth_year": birth_year,
-    "location": location,
-    "family_status": family_status,
-    "nationality": nationality,
-    "career_goal": career_goal,
-    "education": education,
-    "skills": {
-        "professional": professional_skills,
-        "personal": personal_skills
-    },
-    "languages": languages
-}
-
-# Button zur "Generierung"
 if st.button("Lebenslauf generieren"):
-    st.session_state['cv_generated'] = True
-    st.session_state['cv_data'] = cv_data
+    cv_data = {
+        "job_title": job_title,
+        "name": name,
+        "birth_year": birth_year,
+        "location": location,
+        "family_status": family_status,
+        "nationality": nationality,
+        "career_goal": career_goal,
+        "education": [e.strip() for e in education.split(";") if e.strip()],
+        "skills": {
+            "professional": skills_professional,
+            "personal": skills_personal
+        },
+        "languages": [l.strip() for l in languages.split(";") if l.strip()]
+    }
 
-# Ausgabe nach Klick
-if st.session_state['cv_generated']:
-    st.success("Lebenslauf-Daten erfolgreich erfasst!")
-    st.write("Hier sind die eingegebenen Daten:")
-    st.json(st.session_state['cv_data'])
+    env = Environment(loader=FileSystemLoader('.'))
+    template = env.get_template('cv_template.html')
+    html_content = template.render(cv=cv_data)
 
-    st.info("Hinweis: PDF-Generierung in Streamlit Cloud nicht möglich – lokale Ausführung notwendig für PDF.")
+    try:
+        client = pdfcrowd.HtmlToPdfClient(PDFCROWD_USERNAME, PDFCROWD_API_KEY)
+        output_file = f"{cv_data['name'].replace(' ', '_')}_CV.pdf"
 
+        pdf_bytes = client.convertString(html_content)
+
+        st.success("PDF erfolgreich erstellt!")
+        st.download_button("PDF herunterladen", pdf_bytes, file_name=output_file)
+
+    except pdfcrowd.Error as why:
+        st.error(f"Fehler bei der PDF-Erstellung: {why}")
