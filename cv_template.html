@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>{{ cv.name }} - Lebenslauf</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; }
+        h1 { color: #333; }
+        h2 { color: #666; }
+        ul { list-style-type: none; padding: 0; }
+    </style>
+</head>
+<body>
+    <h1>{{ cv.name }}</h1>
+    <h2>{{ cv.job_title }}</h2>
+    <p><strong>Geburtsjahr:</strong> {{ cv.birth_year }}</p>
+    <p><strong>Wohnort:</strong> {{ cv.location }}</p>
+    <p><strong>Familienstand:</strong> {{ cv.family_status }}</p>
+    <p><strong>Staatsangehörigkeit:</strong> {{ cv.nationality }}</p>
+
+    <h2>Berufsziel</h2>
+    <p>{{ cv.career_goal }}</p>
+
+    {% if cv.education %}
+    <h2>Ausbildung</h2>
+    <ul>
+        {% for entry in cv.education %}
+        <li>{{ entry }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+
+    {% if cv.skills.professional or cv.skills.personal %}
+    <h2>Kenntnisse</h2>
+    <ul>
+        {% if cv.skills.professional %}<li><strong>Fachlich:</strong> {{ cv.skills.professional }}</li>{% endif %}
+        {% if cv.skills.personal %}<li><strong>Persönlich:</strong> {{ cv.skills.personal }}</li>{% endif %}
+    </ul>
+    {% endif %}
+
+    {% if cv.languages %}
+    <h2>Sprachen</h2>
+    <ul>
+        {% for lang in cv.languages %}
+        <li>{{ lang }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+</body>
+</html>
