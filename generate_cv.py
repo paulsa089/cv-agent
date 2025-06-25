@@ -1,96 +1,107 @@
+import streamlit as st
 import pdfcrowd
 from jinja2 import Environment, FileSystemLoader
 
-# Beispiel-Daten - ersetze das mit deinen echten Daten
-cv_data = {
-    "job_title": "Finanzbuchhalter",
-    "name": "Luc Manns",
-    "email": "luc.manns@avl-recruiting.de",
-    "phone": "+49 151 46330868",
-    "birth_year": "1996",
-    "location": "Berlin (flexibel innerhalb des Stadtgebiets und Umland)",
-    "family_status": "Ledig",
-    "nationality": "Deutsch",
-    "career_goal": "Digitalaffiner Finanzbuchhalter mit drei Jahren Erfahrung in der operativen Buchhaltung, insbesondere in der Rechnungsbearbeitung und Monatsabschlusserstellung. Ich suche im Raum Berlin eine Position in einem modernen, prozessorientierten Unternehmen, in dem ich meine Kenntnisse in DATEV und Excel einbringen und weiterentwickeln kann.",
-    "salary": "48.000 € brutto/Jahr",
-    "availability": "Kurzfristig, mit 1 Monat Kündigungsfrist",
-    "work_experience": [
-        {
-            "position": "Finanzbuchhalter",
-            "period": "02/2021 -- heute",
-            "company": "Dienstleistungsunternehmen (KMU), Berlin",
-            "tasks": [
-                "Bearbeitung von Eingangs- und Ausgangsrechnungen",
-                "Abstimmung von Konten und Unterstützung bei Monatsabschlüssen",
-                "Erstellung von Umsatzsteuer-Voranmeldungen",
-                "Nutzung von DATEV Unternehmen online und digitalen Buchhaltungslösungen",
-                "Zusammenarbeit mit Steuerberatern und internen Abteilungen"
-            ]
-        },
-        {
-            "position": "Kaufmännischer Sachbearbeiter",
-            "period": "09/2019 -- 01/2021",
-            "company": "Handelsunternehmen, Berlin",
-            "tasks": [
-                "Rechnungsprüfung und Bearbeitung des Zahlungsverkehrs",
-                "Unterstützung in der vorbereitenden Buchhaltung",
-                "Erstellung von Auswertungen in MS Excel (Pivot-Tabellen, einfache Kalkulationen)"
-            ]
-        }
-    ],
-    "education": [
-        {
-            "degree": "Weiterbildung zum Finanzbuchhalter (IHK)",
-            "period": "2021 -- 2022",
-            "institution": "IHK Berlin"
-        },
-        {
-            "degree": "Ausbildung zum Industriekaufmann",
-            "period": "2016 -- 2019",
-            "institution": "Industriebetrieb, Berlin"
-        }
-    ],
-    "skills": {
-        "fachkompetenz": [
-            "Laufende Finanzbuchhaltung (Debitoren, Kreditoren, Bank)",
-            "Umsatzsteuer-Voranmeldungen",
-            "Unterstützung bei Monatsabschlüssen"
-        ],
-        "software": [
-            "DATEV Unternehmen online",
-            "MS Excel (Pivot-Tabellen, Grundkenntnisse Power Query)"
-        ],
-        "languages": [
-            "Deutsch: Muttersprache",
-            "Englisch: Grundkenntnisse"
-        ],
-        "personal_strengths": [
-            "Digitalaffin und offen für Prozessoptimierung",
-            "Strukturiert, zuverlässig und teamorientiert",
-            "Schnelle Auffassungsgabe und Lernbereitschaft"
+# PDFCrowd Zugangsdaten
+PDFCROWD_USERNAME = 'paulsa'  # Deinen pdfcrowd Username eintragen
+PDFCROWD_API_KEY = 'e0bd4b588648bfc431efcd2c0df245a2'  # Deinen pdfcrowd API Key eintragen
+
+st.title("Lebenslauf Generator (Cloud PDF)")
+
+st.header("Lebenslauf-Daten eingeben")
+
+job_title = st.text_input("Berufsbezeichnung", "Finanzbuchhalter")
+name = st.text_input("Name", "Max Mustermann")
+birth_year = st.text_input("Geburtsjahr", "1990")
+location = st.text_input("Wohnort", "Berlin")
+family_status = st.text_input("Familienstand", "Ledig")
+nationality = st.text_input("Staatsangehörigkeit", "Deutsch")
+career_goal = st.text_area("Berufsziel", "Motivierter Finanzbuchhalter mit Erfahrung...")
+
+education_input = st.text_area("Ausbildung (Einträge mit Semikolon trennen)", "Weiterbildung zum Finanzbuchhalter (IHK); Ausbildung zum Industriekaufmann")
+skills_professional = st.text_area("Fachliche Kenntnisse (Semikolon getrennt)", "Buchhaltung; Umsatzsteuer-Voranmeldungen; Monatsabschlüsse")
+skills_personal = st.text_area("Persönliche Eigenschaften (Semikolon getrennt)", "Zuverlässig; Teamfähig; Lernbereit")
+languages_input = st.text_area("Sprachen (Semikolon getrennt)", "Deutsch; Englisch")
+
+# Beispiel: Fiktive Arbeitserfahrung (du kannst das erweitern oder per Formular auch dynamisch machen)
+work_experience = [
+    {
+        "position": "Finanzbuchhalter",
+        "period": "02/2021 - heute",
+        "company": "Dienstleistungsunternehmen (KMU), Berlin",
+        "tasks": [
+            "Bearbeitung von Eingangs- und Ausgangsrechnungen",
+            "Abstimmung von Konten und Unterstützung bei Monatsabschlüssen",
+            "Erstellung von Umsatzsteuer-Voranmeldungen",
+            "Nutzung von DATEV Unternehmen online und digitalen Buchhaltungslösungen",
+            "Zusammenarbeit mit Steuerberatern und internen Abteilungen"
+        ]
+    },
+    {
+        "position": "Kaufmännischer Sachbearbeiter",
+        "period": "09/2019 - 01/2021",
+        "company": "Handelsunternehmen, Berlin",
+        "tasks": [
+            "Rechnungsprüfung und Bearbeitung des Zahlungsverkehrs",
+            "Unterstützung in der vorbereitenden Buchhaltung",
+            "Erstellung von Auswertungen in MS Excel"
         ]
     }
+]
+
+# Parse education entries
+education = []
+for edu_str in education_input.split(";"):
+    edu_str = edu_str.strip()
+    if edu_str:
+        # Einfach mal alles in degree, keine weiteren Felder
+        education.append({
+            "degree": edu_str,
+            "period": "",
+            "institution": ""
+        })
+
+# Parse languages (optional)
+languages = [l.strip() for l in languages_input.split(";") if l.strip()]
+
+# Compose skills dict to match template
+skills = {
+    "fachkompetenz": [s.strip() for s in skills_professional.split(";") if s.strip()],
+    "personal_strengths": [s.strip() for s in skills_personal.split(";") if s.strip()],
+    "software": [],  # Optional, leer
+    "languages": languages
 }
 
-# PDFCrowd Zugangsdaten
-PDFCROWD_USERNAME = 'paulsa'  # deinen pdfcrowd Username hier eintragen
-PDFCROWD_API_KEY = 'e0bd4b588648bfc431efcd2c0df245a2'  # deinen pdfcrowd API Key hier eintragen
+cv_data = {
+    "job_title": job_title,
+    "name": name,
+    "birth_year": birth_year,
+    "location": location,
+    "family_status": family_status,
+    "nationality": nationality,
+    "career_goal": career_goal,
+    "work_experience": work_experience,
+    "education": education,
+    "skills": skills,
+    "salary": "",         # Optional
+    "availability": "",   # Optional
+    "email": "",          # Optional
+    "phone": ""           # Optional
+}
 
-def render_template(data):
+if st.button("Lebenslauf generieren"):
+    # Template laden
     env = Environment(loader=FileSystemLoader('.'))
-    template = env.get_template('cv_template.html')  # Datei mit dem HTML Template (aus vorheriger Antwort)
-    return template.render(cv=data)
+    template = env.get_template('cv_template.html')
+    html_content = template.render(cv=cv_data)
 
-def generate_pdf(html_content, output_file):
     try:
         client = pdfcrowd.HtmlToPdfClient(PDFCROWD_USERNAME, PDFCROWD_API_KEY)
-        pdf = client.convertString(html_content)
-        with open(output_file, 'wb') as f:
-            f.write(pdf)
-        print(f"PDF erfolgreich gespeichert: {output_file}")
-    except pdfcrowd.Error as e:
-        print(f"PDF-Erstellung fehlgeschlagen: {e}")
+        pdf_bytes = client.convertString(html_content)
+        output_file = f"{name.replace(' ', '_')}_Lebenslauf.pdf"
 
-if __name__ == "__main__":
-    html = render_template(cv_data)
-    generate_pdf(html, "lebenslauf.pdf")
+        st.success("PDF erfolgreich erstellt!")
+        st.download_button("PDF herunterladen", data=pdf_bytes, file_name=output_file, mime="application/pdf")
+
+    except pdfcrowd.Error as e:
+        st.error(f"Fehler bei der PDF-Erstellung: {e}")
