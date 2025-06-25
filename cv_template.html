@@ -8,6 +8,7 @@
       font-family: 'Arial', sans-serif;
       margin: 40px;
       color: #333;
+      line-height: 1.4;
     }
     h1 {
       color: #00214D;
@@ -16,79 +17,68 @@
     }
     h2 {
       color: #00214D;
-      font-size: 1.5em;
+      font-size: 1.8em;
       margin-top: 2em;
-      margin-bottom: 0.3em;
+      margin-bottom: 0.4em;
+      border-bottom: 2px solid #00214D;
+      padding-bottom: 4px;
+    }
+    h3 {
+      color: #004080;
+      font-size: 1.2em;
+      margin-bottom: 0.2em;
     }
     .header {
       display: flex;
       justify-content: space-between;
       align-items: flex-start;
+      margin-bottom: 1.5em;
     }
     .header-left {
-      width: 60%;
-    }
-    .header-left h1 {
-      margin: 0;
-    }
-    .header-left h3 {
-      margin: 0;
-      color: #00214D;
-      font-weight: normal;
-      font-size: 1.2em;
+      width: 65%;
     }
     .header-right {
-      width: 35%;
+      width: 30%;
       text-align: right;
     }
     .header-right img {
       height: 1.5cm;
-      margin-top: -10px;
     }
     .section-info {
-      display: flex;
-      justify-content: space-between;
-      margin-top: 1.5em;
-      margin-bottom: 1.5em;
-    }
-    .section-info > div {
-      width: 48%;
-    }
-    .section-info strong {
-      color: #00214D;
-      display: block;
-      margin-bottom: 0.3em;
-      font-size: 1.1em;
-    }
-    hr {
-      border: none;
-      border-top: 1px solid #00214D;
       margin-bottom: 1.5em;
     }
     .basic-info p {
-      margin: 0.2em 0;
+      margin: 0.15em 0;
     }
-    .section-content ul {
-      list-style-type: disc;
+    ul {
       margin-left: 1.5em;
     }
     .job-entry {
-      margin-bottom: 1em;
+      margin-bottom: 1.2em;
     }
     .job-entry strong {
       color: #00214D;
+      font-size: 1.1em;
     }
     .job-entry em {
       font-style: italic;
       display: block;
       margin-bottom: 0.3em;
+      color: #555;
+    }
+    .job-entry span.period {
+      float: right;
+      font-style: italic;
+      color: #444;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #00214D;
+      margin: 1.5em 0;
     }
     .subsection {
       margin-top: 1em;
-    }
-    .subsection ul {
-      list-style-type: disc;
-      margin-left: 1.5em;
+      margin-bottom: 1em;
     }
   </style>
 </head>
@@ -97,31 +87,15 @@
   <div class="header">
     <div class="header-left">
       <h1>{{ cv.job_title }}</h1>
-      <h3>Kenntnisse &amp; Fähigkeiten</h3>
+      <h3>{{ cv.name }}</h3>
     </div>
     <div class="header-right">
-      <img src="logo.png" alt="Logo" />
+      <!-- Optional: Logo einfügen, wenn du eins hast -->
+      <!-- <img src="logo.png" alt="Logo" /> -->
     </div>
   </div>
 
-  <div class="section-info">
-    <div class="contact-info">
-      <strong>Kontaktdaten</strong>
-      <p>{{ cv.name }}</p>
-      {% if cv.email %}<p>{{ cv.email }}</p>{% endif %}
-      {% if cv.phone %}<p>{{ cv.phone }}</p>{% endif %}
-    </div>
-    <div class="conditions">
-      <strong>Rahmenbedingungen</strong>
-      {% if cv.salary %}<p>Gehaltsvorstellung: {{ cv.salary }}</p>{% endif %}
-      {% if cv.availability %}<p>Verfügbarkeit: {{ cv.availability }}</p>{% endif %}
-    </div>
-  </div>
-
-  <hr />
-
-  <div class="basic-info">
-    <p><strong>Name:</strong> {{ cv.name }}</p>
+  <div class="section-info basic-info">
     <p><strong>Geburtsjahr:</strong> {{ cv.birth_year }}</p>
     <p><strong>Wohnort:</strong> {{ cv.location }}</p>
     <p><strong>Familienstand:</strong> {{ cv.family_status }}</p>
@@ -135,7 +109,8 @@
   <h2>Beruflicher Werdegang</h2>
   {% for job in cv.work_experience %}
     <div class="job-entry">
-      <strong>{{ job.position }}</strong> <span style="float:right">{{ job.period }}</span>
+      <strong>{{ job.position }}</strong>
+      <span class="period">{{ job.period }}</span>
       <em>{{ job.company }}</em>
       <ul>
         {% for task in job.tasks %}
@@ -147,10 +122,9 @@
   {% endif %}
 
   {% if cv.education %}
-  <h2>Akademische Laufbahn</h2>
+  <h2>Ausbildung</h2>
   {% for edu in cv.education %}
-    <p><strong>{{ edu.degree }}</strong> <span style="float:right">{{ edu.period }}</span><br/>
-    <em>{{ edu.institution }}</em></p>
+    <p><strong>{{ edu.degree }}</strong></p>
   {% endfor %}
   {% endif %}
 
